@@ -15,6 +15,7 @@ from __future__ import unicode_literals
 
 from testinfra.modules.base import Module
 
+import platform
 
 class Package(Module):
     """Test packages status and version"""
@@ -54,8 +55,16 @@ class Package(Module):
 
     @classmethod
     def get_module_class(cls, _backend):
+        # NOTE: This is marked as depreciated in 3.5 / will be
+        #       removed in 3.7 (according to python doc)
+        OS_Platform = platform.linux_distribution()
         Command = _backend.get_module("Command")
         SystemInfo = _backend.get_module("SystemInfo")
+        # NOTE: Return Package based on platform and not on commands
+        # TODO: Add others platforms
+        if OS_Platform[0].strip() == "openSUSE":
+            return RpmPackage
+
         if SystemInfo.type == "freebsd":
             return FreeBSDPackage
         elif SystemInfo.type in ("openbsd", "netbsd"):
